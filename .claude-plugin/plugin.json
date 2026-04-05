@@ -1,0 +1,11 @@
+{
+  "name": "fp",
+  "version": "1.0.0",
+  "description": "Apply first-principles thinking to software design, architecture, planning, and code review. Decomposes problems to fundamentals, surfaces assumptions, and anchors findings against core engineering principles.",
+  "author": {
+    "name": "Viren",
+    "url": "https://github.com/v1r3n"
+  },
+  "repository": "https://github.com/v1r3n/first-principles-skills",
+  "license": "MIT"
+}
