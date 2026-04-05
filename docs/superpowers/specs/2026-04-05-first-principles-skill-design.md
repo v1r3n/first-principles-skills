@@ -22,7 +22,7 @@ The skill is published as a Claude Code plugin on the Claude marketplace.
 | Decision | Choice | Reasoning |
 |----------|--------|-----------|
 | Core approach | Hybrid: decomposition-first with principle anchors | Gets the real power of first-principles reasoning (decompose then reason up) while using a principle catalog as a safety net, not the driver |
-| Mode priority | Design > Architecture > Planning > Code Review | Reflects where first-principles thinking has the highest leverage |
+| Mode priority | Design > Architecture > Planning > Code Review | Philosophical ordering of where first-principles thinking has the highest leverage. Used for auto-mode-selection: when no mode is specified and multiple modes could apply, the skill prefers the higher-priority mode |
 | Output style | Layered: direct assessment + Socratic questions | Efficient for daily use, with depth available for learning |
 | Relationship to other skills | Independent / standalone | Different lens applied deliberately, not coupled to brainstorming or planning workflows |
 | Scale handling | Scale-agnostic with depth scaling | Simple/Moderate/Complex depth adapts to the subject |
@@ -110,7 +110,7 @@ Generate layered output:
 
 ## Four Modes of Operation
 
-### Mode: Design Review (`/first-principles design`)
+### Mode: Design Review (`/first-principles:design`)
 
 **When:** Evaluating a feature or system design before or during implementation.
 
@@ -123,7 +123,7 @@ Generate layered output:
 
 **Output focus:** Gap analysis between proposed design and what first-principles reasoning suggests.
 
-### Mode: Architecture Review (`/first-principles architecture`)
+### Mode: Architecture Review (`/first-principles:architecture`)
 
 **When:** Evaluating high-level architectural decisions — service boundaries, data storage, communication patterns, deployment topology.
 
@@ -131,13 +131,13 @@ Generate layered output:
 
 **Phase emphasis:**
 - Phase 1 focuses on system-level constraints: scale, latency, consistency, team boundaries, operational requirements
-- Phase 2 targets architectural cargo-culting
+- Phase 2 targets architectural cargo-culting (adopting patterns because others use them, without verifying they fit the actual problem)
 - Phase 3 reasons about natural service boundaries, data gravity, failure domains
 - Phase 4 anchors against: Coupling, Least Knowledge, Reversibility, Fail-fast, Separation of Concerns
 
 **Output focus:** Whether architecture follows from real constraints or from convention. Highlights high-cost irreversible decisions.
 
-### Mode: Planning (`/first-principles plan`)
+### Mode: Planning (`/first-principles:plan`)
 
 **When:** Starting something new — greenfield project or significant new feature.
 
@@ -152,7 +152,7 @@ Generate layered output:
 
 **Output focus:** A principled foundation, not a complete design.
 
-### Mode: Code Review (`/first-principles code`)
+### Mode: Code Review (`/first-principles:code`)
 
 **When:** Reviewing existing code — PR review, legacy code analysis, refactoring assessment.
 
@@ -172,15 +172,16 @@ Generate layered output:
 
 ### Invocation
 
+The plugin provides four separate skills, one per mode. This produces clean invocation paths under the `first-principles` plugin namespace:
+
 ```
-/first-principles <mode> [target]
+/first-principles:design [target]
+/first-principles:architecture [target]
+/first-principles:plan [target]
+/first-principles:code [path or PR]
 ```
 
-- `/first-principles design` — review a design
-- `/first-principles architecture` — review architecture
-- `/first-principles plan` — plan a new project/feature
-- `/first-principles code [path or PR]` — review code
-- `/first-principles` (no mode) — skill assesses context and suggests appropriate mode
+Each skill shares the same five-phase framework but contains mode-specific instructions and output templates. The skill can also be auto-invoked by Claude when the user's request clearly matches a mode (e.g., "review this architecture" triggers the architecture skill).
 
 ### Interaction Flow
 
@@ -208,17 +209,20 @@ Skill produces layered output
 - **Moderate** (multi-component feature, service design): Full decomposition, thorough assumption check, 5-10 findings
 - **Complex** (system architecture, platform design): Deep decomposition, extensive assumption analysis, comprehensive findings with severity ratings
 
-Inferred from input; user can override with `--depth deep`.
+Inferred from input. The user can override by specifying depth naturally in their request (e.g., "do a deep analysis" or "keep it light"). The skill maps natural language to the three levels:
+- "light", "quick", "brief" → Simple
+- "thorough", "detailed" → Moderate
+- "deep", "comprehensive", "exhaustive" → Complex
 
 ---
 
 ## Output Formats
 
-### Assessment Report (Design, Architecture, Code Review modes)
+### Assessment Report (Design and Architecture modes)
 
 ```markdown
 # First Principles Assessment: [Subject]
-**Mode:** [Design | Architecture | Code Review]
+**Mode:** [Design | Architecture]
 **Depth:** [Simple | Moderate | Complex]
 
 ## Executive Summary
@@ -251,6 +255,47 @@ Inferred from input; user can override with `--depth deep`.
 
 ## Recommendations
 1. [Action] — addresses Finding X, because [reasoning]
+```
+
+### Code Review Report (Code Review mode)
+
+```markdown
+# First Principles Code Review: [Subject]
+**Depth:** [Simple | Moderate | Complex]
+**Files reviewed:** [list of file paths]
+
+## Executive Summary
+[2-3 sentences: what was reviewed, overall finding, most important insight]
+
+## Inferred Responsibilities
+[What this code is actually trying to do, derived from reading it]
+
+## Assumptions Surfaced
+- **Assumption:** [what's being taken for granted in the code]
+- **Location:** [file:line_number or file:function_name]
+- **Risk if wrong:** [what breaks]
+
+## Findings
+
+### Critical
+- **Finding:** [direct statement]
+- **Location:** [file:line_number or range]
+- **Code:** [relevant snippet, if short]
+- **Principle:** [which principle is violated]
+- **Reasoning:** [why this matters, traced to fundamentals]
+- **Explore further:** [Socratic question]
+
+### Moderate
+[Same structure]
+
+### Minor
+[Same structure]
+
+## What's Working Well
+[Code patterns that are well-aligned with first principles]
+
+## Recommendations
+1. [Action] at [file:location] — addresses Finding X, because [reasoning]
 ```
 
 ### Planning Report (Planning mode)
@@ -291,21 +336,21 @@ first-principles-skills/
 ├── .claude-plugin/
 │   └── plugin.json                    # Claude marketplace plugin manifest
 ├── skills/
-│   └── first-principles/
-│       ├── SKILL.md                   # Main skill file (Claude Code skill)
-│       ├── references/
-│       │   ├── principle-catalog.md   # Full principle catalog
-│       │   └── output-templates.md    # Output format templates
-│       └── modes/
-│           ├── design-review.md       # Mode-specific guidance
-│           ├── architecture-review.md
-│           ├── planning.md
-│           └── code-review.md
-├── commands/
-│   └── first-principles.md           # Slash command entry point
+│   ├── design/
+│   │   └── SKILL.md                   # Design review skill
+│   ├── architecture/
+│   │   └── SKILL.md                   # Architecture review skill
+│   ├── plan/
+│   │   └── SKILL.md                   # Planning skill
+│   ├── code/
+│   │   └── SKILL.md                   # Code review skill
+│   └── shared/                        # Shared references used by all skills
+│       ├── framework.md               # The five-phase framework (core logic)
+│       ├── principle-catalog.md       # Full principle catalog
+│       └── output-templates.md        # Output format templates
 ├── docs/
-│   ├── methodology.md                # Standalone human-readable methodology
-│   ├── principles/                   # Deep-dive on each principle (for humans)
+│   ├── methodology.md                 # Standalone human-readable methodology
+│   ├── principles/                    # Deep-dive on each principle (for humans)
 │   │   ├── separation-of-concerns.md
 │   │   ├── information-hiding.md
 │   │   ├── coupling-and-cohesion.md
@@ -321,15 +366,17 @@ first-principles-skills/
 │   │   ├── graceful-degradation.md
 │   │   ├── backpressure.md
 │   │   └── least-astonishment.md
-│   └── examples/                     # Worked examples
-│       ├── design-review-example.md
-│       ├── architecture-review-example.md
-│       └── planning-example.md
-├── docs/superpowers/specs/           # Design specs
-│   └── 2026-04-05-first-principles-skill-design.md
-├── README.md                         # Overview, philosophy, quick start, install
-├── CLAUDE.md                         # Project conventions for AI assistants
-└── LICENSE                           # MIT license
+│   ├── examples/                      # Worked examples
+│   │   ├── design-review-example.md
+│   │   ├── architecture-review-example.md
+│   │   ├── planning-example.md
+│   │   └── code-review-example.md
+│   └── superpowers/
+│       └── specs/                     # Design specs
+│           └── 2026-04-05-first-principles-skill-design.md
+├── README.md                          # Overview, philosophy, quick start, install
+├── CLAUDE.md                          # Project conventions for AI assistants
+└── LICENSE                            # MIT license
 ```
 
 ### Plugin Manifest (`.claude-plugin/plugin.json`)
@@ -344,27 +391,90 @@ first-principles-skills/
     "url": "https://github.com/v1r3n"
   },
   "repository": "https://github.com/v1r3n/first-principles-skills",
-  "license": "MIT",
-  "keywords": [
-    "first-principles",
-    "design-review",
-    "architecture",
-    "code-review",
-    "planning",
-    "software-engineering",
-    "principles",
-    "reasoning"
-  ]
+  "license": "MIT"
 }
 ```
 
-### Skill File (`skills/first-principles/SKILL.md`)
+### SKILL.md Frontmatter (Per-Mode Skills)
 
-The SKILL.md is the main artifact — it contains the complete instructions for the AI to execute the five-phase framework across all four modes. It references the principle catalog and mode-specific guidance files.
+Each of the four SKILL.md files follows this frontmatter pattern:
 
-### Command File (`commands/first-principles.md`)
+**`skills/design/SKILL.md`:**
+```yaml
+---
+name: design
+description: >
+  Use when reviewing a software design for first-principles alignment.
+  Triggers on: "review this design", "evaluate this design", "design review",
+  "is this design sound", or when a user shares a design doc/spec for feedback.
+argument-hint: "[target file or description]"
+---
+```
 
-The slash command entry point that parses the mode argument and loads the skill. Enables `/first-principles design`, `/first-principles architecture`, etc.
+**`skills/architecture/SKILL.md`:**
+```yaml
+---
+name: architecture
+description: >
+  Use when evaluating software architecture decisions from first principles.
+  Triggers on: "review this architecture", "evaluate architecture",
+  "architecture review", "are these service boundaries right",
+  or when discussing system-level structure.
+argument-hint: "[target file or description]"
+---
+```
+
+**`skills/plan/SKILL.md`:**
+```yaml
+---
+name: plan
+description: >
+  Use when planning a new project or feature using first-principles thinking.
+  Triggers on: "plan this feature", "design from scratch", "greenfield",
+  "what should we build", or when starting something new and wanting
+  a principled foundation.
+argument-hint: "[problem statement or description]"
+---
+```
+
+**`skills/code/SKILL.md`:**
+```yaml
+---
+name: code
+description: >
+  Use when reviewing code for first-principles alignment — structural and
+  logical issues, not style. Triggers on: "review this code from first principles",
+  "first principles code review", or when the user wants deeper-than-surface
+  code analysis.
+argument-hint: "[file path, PR number, or description]"
+---
+```
+
+### Content Distribution Strategy
+
+The SKILL.md files are kept focused and concise (under 500 lines each). Content is distributed as follows:
+
+**In each SKILL.md (mode-specific):**
+- Frontmatter (name, description, argument-hint)
+- Mode-specific instructions: what to focus on, phase emphasis, output template
+- References to shared files for the framework and catalog
+
+**In `skills/shared/framework.md`:**
+- The complete five-phase framework description
+- Phase-by-phase instructions for the AI
+- Depth scaling logic
+
+**In `skills/shared/principle-catalog.md`:**
+- All 15 principles across three tiers
+- Essence and Key Question for each
+- Guidance on selective application (not a checklist)
+
+**In `skills/shared/output-templates.md`:**
+- Assessment Report template (design/architecture)
+- Code Review Report template
+- Planning Report template
+
+Each SKILL.md references shared files via relative markdown links (e.g., `[framework](../shared/framework.md)`). Claude loads the referenced files when executing the skill.
 
 ---
 
@@ -373,14 +483,27 @@ The slash command entry point that parses the mode argument and loads the skill.
 **Publishing path:** External/third-party plugin via the GitHub repo.
 
 1. Plugin lives at `https://github.com/v1r3n/first-principles-skills`
-2. Submit via the [plugin directory submission form](https://clau.de/plugin-directory-submission)
-3. Users can install directly: `/plugin install first-principles` or test locally: `cc --plugin-dir /path/to/first-principles-skills`
+2. Submit via the Claude Code plugin directory submission process
+3. Users can test locally: `claude --plugin-dir /path/to/first-principles-skills`
+4. Once listed, users install via: `/plugin install first-principles`
 
 **README.md** serves double duty: repo documentation and marketplace discovery page. It will include:
 - Philosophy and approach overview
 - Quick start / installation instructions
 - Usage examples for each mode
 - Link to the full methodology docs
+
+---
+
+## Edge Cases and Fallbacks
+
+| Scenario | Behavior |
+|----------|----------|
+| No input and no context (empty invocation, no files open) | Ask the user what they'd like to analyze. Offer the four modes with brief descriptions. |
+| Input doesn't match the requested mode (e.g., architecture review on a single function) | Suggest a more appropriate mode. Proceed with the requested mode only if the user confirms. |
+| Input is too large for meaningful analysis in context | Focus on the most critical components. State what was analyzed and what was skipped, with reasoning for the prioritization. |
+| Ambiguous mode (could be design or architecture) | Use the mode priority order (design > architecture > planning > code) to pick the default. State the choice and offer to switch. |
+| User provides no mode | Assess the input and suggest the most appropriate mode based on what's provided. |
 
 ---
 
