@@ -110,7 +110,7 @@ Generate layered output:
 
 ## Four Modes of Operation
 
-### Mode: Design Review (`/first-principles:design`)
+### Mode: Design Review (`/fp:design`)
 
 **When:** Evaluating a feature or system design before or during implementation.
 
@@ -123,7 +123,7 @@ Generate layered output:
 
 **Output focus:** Gap analysis between proposed design and what first-principles reasoning suggests.
 
-### Mode: Architecture Review (`/first-principles:architecture`)
+### Mode: Architecture Review (`/fp:architecture`)
 
 **When:** Evaluating high-level architectural decisions — service boundaries, data storage, communication patterns, deployment topology.
 
@@ -137,7 +137,7 @@ Generate layered output:
 
 **Output focus:** Whether architecture follows from real constraints or from convention. Highlights high-cost irreversible decisions.
 
-### Mode: Planning (`/first-principles:plan`)
+### Mode: Planning (`/fp:plan`)
 
 **When:** Starting something new — greenfield project or significant new feature.
 
@@ -152,7 +152,7 @@ Generate layered output:
 
 **Output focus:** A principled foundation, not a complete design.
 
-### Mode: Code Review (`/first-principles:code`)
+### Mode: Code Review (`/fp:code`)
 
 **When:** Reviewing existing code — PR review, legacy code analysis, refactoring assessment.
 
@@ -172,13 +172,13 @@ Generate layered output:
 
 ### Invocation
 
-The plugin provides four separate skills, one per mode. This produces clean invocation paths under the `first-principles` plugin namespace:
+The plugin provides four separate skills, one per mode. The plugin name is `fp` (short for "first principles"), producing clean invocation paths:
 
 ```
-/first-principles:design [target]
-/first-principles:architecture [target]
-/first-principles:plan [target]
-/first-principles:code [path or PR]
+/fp:design [target]
+/fp:architecture [target]
+/fp:plan [target]
+/fp:code [path or PR]
 ```
 
 Each skill shares the same five-phase framework but contains mode-specific instructions and output templates. The skill can also be auto-invoked by Claude when the user's request clearly matches a mode (e.g., "review this architecture" triggers the architecture skill).
@@ -383,7 +383,7 @@ first-principles-skills/
 
 ```json
 {
-  "name": "first-principles",
+  "name": "fp",
   "version": "1.0.0",
   "description": "Apply first-principles thinking to software design, architecture, planning, and code review. Decomposes problems to fundamentals, surfaces assumptions, and anchors findings against core engineering principles.",
   "author": {
@@ -476,6 +476,8 @@ The SKILL.md files are kept focused and concise (under 500 lines each). Content 
 
 Each SKILL.md references shared files via relative markdown links (e.g., `[framework](../shared/framework.md)`). Claude loads the referenced files when executing the skill.
 
+Note: The plugin name in `plugin.json` is `fp` while the GitHub repo is `first-principles-skills`. The plugin name controls the invocation namespace (`/fp:*`); the repo name is for discoverability and clarity on GitHub.
+
 ---
 
 ## Marketplace Publishing
@@ -485,7 +487,7 @@ Each SKILL.md references shared files via relative markdown links (e.g., `[frame
 1. Plugin lives at `https://github.com/v1r3n/first-principles-skills`
 2. Submit via the Claude Code plugin directory submission process
 3. Users can test locally: `claude --plugin-dir /path/to/first-principles-skills`
-4. Once listed, users install via: `/plugin install first-principles`
+4. Once listed, users install via: `/plugin install fp`
 
 **README.md** serves double duty: repo documentation and marketplace discovery page. It will include:
 - Philosophy and approach overview
