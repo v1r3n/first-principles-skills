@@ -1,95 +1,105 @@
-# fp — First Principles Thinking for Software Engineering
+# /fp
 
-> A Claude Code plugin that reasons from fundamentals, not conventions.
+Your team adopted microservices because Netflix did. You chose Kafka because "event-driven is best." You split into 12 services for 4 developers. Sound familiar?
 
-## What is this?
+**/fp** is a Claude Code plugin that catches this. It applies first-principles thinking to your software — decomposing problems to their fundamental truths, surfacing the assumptions nobody questioned, and telling you what your design *should* look like based on what it actually needs to do.
 
-This plugin applies first-principles thinking to software engineering. Instead of running through checklists or enforcing style guides, it decomposes problems to their fundamental truths, surfaces hidden assumptions, reasons upward from real constraints, and anchors findings against core engineering principles.
+This isn't a linter. It's not a checklist. It reasons from the ground up.
 
-Unlike conventional review tools that pattern-match against known good practices, fp works bottom-up. It starts by asking "what problem are we actually solving?" and builds toward a solution structure derived from the problem itself — not from convention, habit, or cargo-culted patterns.
+## How it works
 
-The plugin is designed for AI assistants (Claude Code primarily), but the methodology is fully documented for human use too. Whether you're using it through Claude Code or reading the framework directly, the reasoning process is the same.
+When you run `/fp:design`, `/fp:architecture`, `/fp:plan`, or `/fp:code`, the plugin doesn't pattern-match against "best practices." Instead, it runs a five-phase reasoning process:
 
-## The Five Phases
+**1. Decompose** — What problem are we *actually* solving? Not "we need a notification service" — but "users need to know when something requires their attention." Strip away the solution language and find the real problem.
 
-```
-Decompose → Surface Assumptions → Reason Upward → Anchor Against Principles → Produce Assessment
-```
+**2. Surface Assumptions** — What was decided by default? "PostgreSQL because we always use PostgreSQL." "Microservices because modern." "REST because REST." Every unjustified assumption is a risk.
 
-1. **Decompose** — Strip the problem to fundamental truths: the real problem, the actors, the hard constraints.
-2. **Surface Assumptions** — Identify what is taken for granted: default technology choices, conventional patterns, inherited preferences.
-3. **Reason Upward** — Build from fundamentals toward what the solution should look like, without referencing existing architecture.
-4. **Anchor Against Principles** — Cross-check the derived structure against established engineering principles, selecting by relevance not by rote.
-5. **Produce Assessment** — Generate layered, actionable findings with severity, Socratic questions, and concrete recommendations.
+**3. Reason Upward** — Given only the real problem and real constraints, what *should* the solution look like? Build up from fundamentals. Compare that against what's actually proposed.
 
-## Modes
+**4. Anchor Against Principles** — Cross-check against 15 engineering principles (Separation of Concerns, Reversibility, Fail-Fast, etc.) — not as a checklist, but selectively based on what the analysis revealed.
 
-| Mode | Command | When to Use |
-|------|---------|-------------|
-| Design Review | `/fp:design` | Evaluate feature/system designs before or during implementation |
-| Architecture Review | `/fp:architecture` | Evaluate service boundaries, data storage, communication patterns |
-| Planning | `/fp:plan` | Start new projects/features with a principled foundation |
-| Code Review | `/fp:code` | Review code for structural and logical issues, not style nits |
+**5. Produce Assessment** — Direct findings with severity, Socratic questions for deeper exploration, and concrete recommendations. Plus what's working well — this isn't just a criticism tool.
+
+**Why this works:** A checklist tells you *what* to check. First-principles reasoning tells you *why* something is wrong — traced all the way back to the fundamental truth it violates. That's the difference between "this coupling is bad" and "this coupling means a pricing change will cascade through 6 services because the boundary was drawn along technical layers, not business domains."
 
 ## Installation
 
 ```bash
-# From the Claude Code marketplace
 /plugin install fp
+```
 
-# Or test locally
+Or test locally:
+
+```bash
 claude --plugin-dir /path/to/first-principles-skills
 ```
 
-## Quick Examples
+## Usage
 
-**`/fp:design`** — Share a design doc or describe your feature, and get a gap analysis between your design and what first-principles reasoning suggests.
+```
+/fp:design                  Review a design doc or feature spec
+/fp:architecture             Review system architecture
+/fp:plan                     Plan a new project from first principles
+/fp:code src/auth/           Review code for structural issues
+```
 
-**`/fp:architecture`** — Point it at your codebase or describe your system, and learn whether your architecture follows from real constraints or from convention.
+## What you get
 
-**`/fp:plan`** — Describe a problem you're solving, and get a principled foundation: key decisions ordered by irreversibility, with options and trade-offs.
+**Design Review** — "Your notification system design assumes each channel needs its own service. But 80% of the logic is shared. The real boundary isn't the channel — it's the routing decision. A single preference-aware router with channel adapters would eliminate the duplication and the preference-sync bug you don't know you have yet."
 
-**`/fp:code src/auth/`** — Get a structural and logical review of your code, with findings traced to specific principles and file:line references.
+**Architecture Review** — "You have 12 microservices, 4 developers, and hundreds of orders per day. The microservices architecture was adopted because 'modern systems use microservices,' but your actual constraints (modest scale, small team, rapid iteration) point to a well-structured monolith with clear module boundaries. The distributed transactions you're fighting are accidental complexity — the problem didn't demand them."
 
-## The Principle Catalog
+**Planning** — "You said 'we need feature flags.' But the real problem is release risk management. A boolean toggle system with an admin UI solves 90% of that. The targeting engine, the percentage rollouts, the rule builder — those are solutions to problems you haven't confirmed you have. Start with the simplest thing that addresses the actual risk. Expand when the need is proven."
 
-### Tier 1 — Foundational (Always Relevant)
+**Code Review** — "Your `login()` function handles authentication, rate limiting, token generation, audit logging, and session management. That's five responsibilities in one function. The hardcoded JWT secret at `auth.ts:47` is a critical security issue. And the rate limit check at line 62 happens *after* the bcrypt comparison — meaning locked accounts still burn CPU on password hashing."
 
-| # | Principle | Essence |
-|---|-----------|---------|
-| 1 | Separation of Concerns | Each unit has one reason to exist and one reason to change |
-| 2 | Information Hiding | Implementation details behind stable interfaces |
-| 3 | Coupling & Cohesion | Related things together, unrelated things apart |
-| 4 | Simplicity (YAGNI/KISS) | Nothing exists without justification from a real constraint |
-| 5 | Single Source of Truth | Every piece of knowledge has one authoritative home |
+## The 15 Principles
 
-### Tier 2 — Structural (Architecture & Design Focus)
+Not a checklist — a reference. The plugin draws from these selectively based on what the analysis reveals.
 
-| # | Principle | Essence |
-|---|-----------|---------|
-| 6 | Least Privilege / Least Knowledge | Components know and access only what they need |
-| 7 | Reversibility | Prefer decisions that are cheap to change |
-| 8 | Dependency Direction | Depend on abstractions, not concretions; depend inward, not outward |
-| 9 | Fail-Fast / Explicit Errors | Surface problems at the earliest possible moment |
-| 10 | Composition over Inheritance | Build behavior from small, combinable pieces |
+| | Principle | The Question It Asks |
+|---|-----------|---------------------|
+| | **Foundational** | |
+| 1 | Separation of Concerns | "If requirement X changes, how many places break?" |
+| 2 | Information Hiding | "Can I change internals without breaking consumers?" |
+| 3 | Coupling & Cohesion | "Do things that change together live together?" |
+| 4 | Simplicity | "What happens if I delete this?" |
+| 5 | Single Source of Truth | "If this fact changes, how many places need updating?" |
+| | **Structural** | |
+| 6 | Least Knowledge | "Does this component know things it doesn't need?" |
+| 7 | Reversibility | "What's the cost of changing this decision in 6 months?" |
+| 8 | Dependency Direction | "Does business logic depend on infrastructure, or vice versa?" |
+| 9 | Fail-Fast | "If this input is invalid, when does the system find out?" |
+| 10 | Composition over Inheritance | "Am I inheriting behavior I don't need?" |
+| | **Operational** | |
+| 11 | Observability | "If this breaks at 3am, can on-call understand what happened?" |
+| 12 | Idempotency | "What happens if this runs twice?" |
+| 13 | Graceful Degradation | "If dependency X dies, does everything stop?" |
+| 14 | Backpressure | "What happens when load exceeds capacity?" |
+| 15 | Least Astonishment | "Would a new team member be surprised by this?" |
 
-### Tier 3 — Operational (Scale & Production Focus)
+Each principle has a [deep-dive doc](docs/principles/) with violation examples, alignment examples, and a litmus test.
 
-| # | Principle | Essence |
-|---|-----------|---------|
-| 11 | Observability | The system explains its own behavior |
-| 12 | Idempotency | Repeating an operation produces the same result |
-| 13 | Graceful Degradation | Partial failure doesn't mean total failure |
-| 14 | Backpressure | Systems communicate their capacity limits |
-| 15 | Least Astonishment | Behavior matches reasonable expectations |
+## For humans
 
-## For Humans
+The methodology works without the plugin. See [`docs/methodology.md`](docs/methodology.md) for a standalone guide, or browse the [worked examples](docs/examples/) to see the five phases applied to real scenarios:
 
-The methodology behind this plugin is documented for humans too. See [`docs/methodology.md`](docs/methodology.md) for a standalone guide to applying first-principles thinking to software engineering.
+- [Design review of a notification system](docs/examples/design-review-example.md)
+- [Architecture review of over-engineered microservices](docs/examples/architecture-review-example.md)
+- [Planning a feature flag system from scratch](docs/examples/planning-example.md)
+- [Code review of an authentication module](docs/examples/code-review-example.md)
+
+## Philosophy
+
+- **Reasoning > checklists** — A checklist catches known patterns. First-principles reasoning catches novel problems.
+- **Decompose before you design** — If you can't state the problem without solution language, you don't understand the problem yet.
+- **Assumptions are the #1 risk** — The most dangerous technical decisions are the ones nobody realized they were making.
+- **Question convention, not for sport, but for fit** — "Microservices" isn't wrong. "Microservices because microservices" is.
+- **Assessment, not judgment** — The goal is clarity about trade-offs, not a score.
 
 ## Contributing
 
-Contributions welcome. The principle catalog is extensible — if you think a fundamental principle is missing, open an issue or PR.
+PRs welcome. The principle catalog is extensible — if a fundamental principle is missing, open an issue or PR. If you have a great worked example of first-principles analysis, we want it.
 
 ## License
 
