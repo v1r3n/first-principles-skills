@@ -25,7 +25,7 @@ When you run `/fp:design`, `/fp:architecture`, `/fp:plan`, or `/fp:code`, the pl
 ## Installation
 
 ```bash
-curl -sL https://raw.githubusercontent.com/v1r3n/first-principles-skills/main/install.sh | bash
+curl -sL https://v1r3n.github.io/first-principles-skills/install.sh | bash
 ```
 
 That's it. The installer auto-detects which coding agents you have — Claude Code, Codex, OpenCode, Cursor, Windsurf — and sets up fp for each one.

@@ -1,6 +1,6 @@
 #!/bin/bash
 # /fp — First Principles Thinking for Software Engineering
-# One-liner: curl -sL https://raw.githubusercontent.com/v1r3n/first-principles-skills/main/install.sh | bash
+# One-liner: curl -sL https://v1r3n.github.io/first-principles-skills/install.sh | bash
 
 set -e
 
