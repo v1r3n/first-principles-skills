@@ -25,22 +25,20 @@ When you run `/fp:design`, `/fp:architecture`, `/fp:plan`, or `/fp:code`, the pl
 ## Installation
 
 ```bash
-/plugin install fp
+curl -sL https://raw.githubusercontent.com/v1r3n/first-principles-skills/main/install.sh | bash
 ```
 
-Or test locally:
+That's it. The installer auto-detects which coding agents you have — Claude Code, Codex, OpenCode, Cursor, Windsurf — and sets up fp for each one.
 
-```bash
-claude --plugin-dir /path/to/first-principles-skills
-```
+Start a new session and try `/fp-design`. If it questions your assumptions, you're good.
 
 ## Usage
 
 ```
-/fp:design                  Review a design doc or feature spec
-/fp:architecture             Review system architecture
-/fp:plan                     Plan a new project from first principles
-/fp:code src/auth/           Review code for structural issues
+/fp-design                  Review a design doc or feature spec
+/fp-architecture             Review system architecture
+/fp-plan                     Plan a new project from first principles
+/fp-code src/auth/           Review code for structural issues
 ```
 
 ## What you get
@@ -88,6 +86,16 @@ The methodology works without the plugin. See [`docs/methodology.md`](docs/metho
 - [Architecture review of over-engineered microservices](docs/examples/architecture-review-example.md)
 - [Planning a feature flag system from scratch](docs/examples/planning-example.md)
 - [Code review of an authentication module](docs/examples/code-review-example.md)
+
+## Agent Compatibility
+
+| Agent | Experience | Invoke |
+|-------|-----------|--------|
+| **Claude Code** | Full skill with shared references | `/fp-design`, `/fp-architecture`, `/fp-plan`, `/fp-code` |
+| **Codex CLI** | Full skill with shared references | `$fp-design`, etc. |
+| **OpenCode** | Full skill with shared references | `/fp-design`, etc. |
+| **Cursor** | Project-level rules (manual copy) | `@fp-design`, etc. |
+| **Windsurf** | Global rules | Ask in chat |
 
 ## Philosophy
 
