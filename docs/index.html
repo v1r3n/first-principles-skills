@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>/fp — First Principles Thinking for Software Engineering</title>
+    <meta name="description" content="A coding agent skill that reasons from fundamentals, not conventions. Decomposes problems, surfaces assumptions, and tells you what your design should actually look like.">
+    <meta property="og:title" content="/fp — First Principles Thinking for Software Engineering">
+    <meta property="og:description" content="Your team adopted microservices because Netflix did. /fp catches that.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://v1r3n.github.io/first-principles-skills/">
+    <style>
+        :root {
+            --bg: #0f0e0c;
+            --surface: #1a1814;
+            --surface-hover: #211f19;
+            --border: #332e24;
+            --text: #ede8df;
+            --text-muted: #9a9182;
+            --accent: #e8a838;
+            --accent-dim: #c4872a;
+            --accent-glow: rgba(232, 168, 56, 0.12);
+            --critical: #e85438;
+            --moderate: #e8a838;
+            --minor: #7a9e5a;
+            --phase: #d4a04a;
+            --font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Hero */
+        .hero {
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+
+        .hero-command {
+            font-family: var(--font-mono);
+            font-size: 4.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+
+        .hero-command .slash { color: var(--text-muted); }
+        .hero-command .fp { color: var(--accent); }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            margin-bottom: 32px;
+        }
+
+        .hero-tagline {
+            font-size: 1.1rem;
+            color: var(--text);
+            max-width: 620px;
+            margin: 0 auto 40px;
+            line-height: 1.7;
+        }
+
+        .hero-tagline em {
+            color: var(--accent);
+            font-style: normal;
+        }
+
+        .badge-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        /* Install */
+        .install-section { padding: 40px 0; }
+
+        .install-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .install-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .install-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .install-dot.red { background: #ff5f57; }
+        .install-dot.yellow { background: #febc2e; }
+        .install-dot.green { background: #28c840; }
+
+        .install-code {
+            padding: 20px 24px;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        .install-code .comment { color: var(--text-muted); }
+        .install-code .command { color: var(--accent); }
+
+        /* Sections */
+        .section { padding: 60px 0; }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 28px;
+            font-size: 0.95rem;
+        }
+
+        .separator {
+            height: 1px;
+            background: var(--border);
+            margin: 0;
+        }
+
+        /* Problem hook */
+        .hook-section { padding: 60px 0; }
+
+        .hook-text {
+            font-size: 1.15rem;
+            color: var(--text);
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+            line-height: 1.8;
+        }
+
+        .hook-text .assumption {
+            color: var(--critical);
+            text-decoration: line-through;
+            text-decoration-color: rgba(232, 84, 56, 0.5);
+        }
+
+        .hook-text .truth {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Phases */
+        .phases-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .phase-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .phase-num {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 700;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-dim);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: var(--accent);
+        }
+
+        .phase-content h3 {
+            font-size: 1rem;
+            margin-bottom: 4px;
+            color: var(--text);
+        }
+
+        .phase-content p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .phase-connector {
+            width: 2px;
+            height: 12px;
+            background: var(--border);
+            margin-left: 15px;
+        }
+
+        /* Finding example */
+        .finding-thread {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .finding-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px 24px;
+        }
+
+        .finding-card.critical { border-left: 3px solid var(--critical); }
+        .finding-card.moderate { border-left: 3px solid var(--moderate); }
+        .finding-card.good { border-left: 3px solid var(--minor); }
+        .finding-card.question { border-left: 3px solid var(--text-muted); }
+
+        .finding-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        .finding-label.critical { color: var(--critical); }
+        .finding-label.moderate { color: var(--moderate); }
+        .finding-label.good { color: var(--minor); }
+        .finding-label.question { color: var(--text-muted); }
+
+        .finding-text {
+            font-size: 0.95rem;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .finding-principle {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--accent-dim);
+            margin-top: 8px;
+        }
+
+        /* Usage */
+        .usage-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .usage-grid { grid-template-columns: 1fr; }
+            .hero-command { font-size: 3rem; }
+        }
+
+        .usage-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px 20px;
+        }
+
+        .usage-cmd {
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+
+        .usage-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Principles */
+        .principle-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 700px) {
+            .principle-grid { grid-template-columns: 1fr; }
+        }
+
+        .principle-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px 20px;
+        }
+
+        .principle-card h4 {
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+            color: var(--text);
+        }
+
+        .principle-card p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .tier-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent-dim);
+            margin-bottom: 12px;
+            margin-top: 20px;
+        }
+
+        .tier-label:first-child { margin-top: 0; }
+
+        /* Why cards */
+        .why-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 700px) {
+            .why-grid { grid-template-columns: 1fr; }
+        }
+
+        .why-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+        }
+
+        .why-card h3 {
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+
+        .why-card p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Footer */
+        footer {
+            padding: 40px 0;
+            text-align: center;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-command">
+            <span class="slash">/</span><span class="fp">fp</span>
+        </div>
+        <p class="hero-subtitle">First Principles Thinking for Software Engineering</p>
+        <p class="hero-tagline">
+            Your team adopted microservices because Netflix did.<br>
+            You chose Kafka because "event-driven is best."<br>
+            <em>/fp</em> catches that. It reasons from fundamentals, not conventions.
+        </p>
+        <div class="badge-row">
+            <span class="badge">Claude Code</span>
+            <span class="badge">Codex CLI</span>
+            <span class="badge">OpenCode</span>
+            <span class="badge">Cursor</span>
+            <span class="badge">Windsurf</span>
+        </div>
+    </div>
+</section>
+
+<hr class="separator">
+
+<!-- Install -->
+<section class="install-section">
+    <div class="container">
+        <div class="install-box">
+            <div class="install-header">
+                <div class="install-dot red"></div>
+                <div class="install-dot yellow"></div>
+                <div class="install-dot green"></div>
+            </div>
+            <div class="install-code">
+                <div class="comment"># One command. Auto-detects your agents.</div>
+                <div class="command">curl -sL https://v1r3n.github.io/first-principles-skills/install.sh | bash</div>
+                <br>
+                <div class="comment"># Then in any session:</div>
+                <div class="command">/fp-design</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="separator">
+
+<!-- The Problem -->
+<section class="hook-section">
+    <div class="container">
+        <h2 class="section-title">This Isn't a Linter</h2>
+        <p class="hook-text">
+            Most review tools pattern-match against known good practices.<br>
+            /fp works <em>bottom-up</em>. It starts with<br>
+            <span class="assumption">"we need a notification service"</span><br>
+            and finds the real problem:<br>
+            <span class="truth">"users need to know when something requires their attention."</span><br><br>
+            Then it builds toward what the solution <em>should</em> look like &mdash;<br>
+            based on what it actually needs to do, not what's familiar.
+        </p>
+    </div>
+</section>
+
+<hr class="separator">
+
+<!-- Five Phases -->
+<section class="section">
+    <div class="container">
+        <h2 class="section-title">The Five Phases</h2>
+        <div class="phases-grid">
+            <div class="phase-card">
+                <div class="phase-num">1</div>
+                <div class="phase-content">
+                    <h3>Decompose</h3>
+                    <p>Strip the problem to fundamental truths. What problem are we actually solving? What are the hard, irreducible constraints? What would the solution look like with zero legacy and zero bias?</p>
+                </div>
+            </div>
+            <div class="phase-connector"></div>
+            <div class="phase-card">
+                <div class="phase-num">2</div>
+                <div class="phase-content">
+                    <h3>Surface Assumptions</h3>
+                    <p>Find what's been taken for granted. "PostgreSQL because we always use PostgreSQL." "REST because REST." Every unjustified assumption is a risk nobody priced in.</p>
+                </div>
+            </div>
+            <div class="phase-connector"></div>
+            <div class="phase-card">
+                <div class="phase-num">3</div>
+                <div class="phase-content">
+                    <h3>Reason Upward</h3>
+                    <p>Given only the real problem and real constraints, build toward what the solution should look like. Compare that against what was actually proposed or built.</p>
+                </div>
+            </div>
+            <div class="phase-connector"></div>
+            <div class="phase-card">
+                <div class="phase-num">4</div>
+                <div class="phase-content">
+                    <h3>Anchor Against Principles</h3>
+                    <p>Cross-check against 15 engineering principles &mdash; not as a checklist, but selectively based on what the analysis revealed. Separation of Concerns. Reversibility. Fail-Fast.</p>
+                </div>
+            </div>
+            <div class="phase-connector"></div>
+            <div class="phase-card">
+                <div class="phase-num">5</div>
+                <div class="phase-content">
+                    <h3>Produce Assessment</h3>
+                    <p>Direct findings with severity. Socratic questions for deeper exploration. Concrete recommendations. Plus what's working well &mdash; this isn't just a criticism tool.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="separator">
+
+<!-- Finding Example -->
+<section class="section">
+    <div class="container">
+        <h2 class="section-title">What You Get</h2>
+        <p class="section-subtitle">A real architecture review of an over-engineered e-commerce platform.</p>
+        <div class="finding-thread">
+            <div class="finding-card critical">
+                <div class="finding-label critical">Critical &mdash; Cargo-Culted Architecture</div>
+                <div class="finding-text">
+                    You have 12 microservices, 4 developers, and hundreds of orders per day. The microservices architecture was adopted because "modern systems use microservices," but your actual constraints &mdash; modest scale, small team, rapid iteration &mdash; point to a well-structured monolith with clear module boundaries.
+                </div>
+                <div class="finding-principle">Principle: Simplicity &middot; Reversibility</div>
+            </div>
+            <div class="finding-card moderate">
+                <div class="finding-label moderate">Moderate &mdash; Accidental Complexity</div>
+                <div class="finding-text">
+                    The distributed transactions you're fighting are accidental complexity. Eight of twelve services share a single database &mdash; you have the coordination overhead of microservices without the independence benefits. The coupling is hidden behind HTTP calls instead of function calls, making it slower and harder to debug.
+                </div>
+                <div class="finding-principle">Principle: Coupling &amp; Cohesion</div>
+            </div>
+            <div class="finding-card good">
+                <div class="finding-label good">Working Well</div>
+                <div class="finding-text">
+                    The payment service is correctly isolated with its own data store and clear API contract. This is the one service that has genuinely different scaling, security, and compliance characteristics. Keep this boundary.
+                </div>
+            </div>
+            <div class="finding-card question">
+                <div class="finding-label question">Explore Further</div>
+                <div class="finding-text">
+                    "If you could start over with what you know now, would you draw the same service boundaries? What would change if you organized around business domains instead of technical layers?"
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="separator">
+
+<!-- Usage -->
+<section class="section">
+    <div class="container">
+        <h2 class="section-title">Four Modes</h2>
+        <div class="usage-grid">
+            <div class="usage-card">
+                <div class="usage-cmd">/fp-design</div>
+                <div class="usage-desc">Review a feature or system design. Get a gap analysis between your design and what first-principles reasoning suggests.</div>
+            </div>
+            <div class="usage-card">
+                <div class="usage-cmd">/fp-architecture</div>
+                <div class="usage-desc">Review system architecture. Learn whether your service boundaries follow from real constraints or from convention.</div>
+            </div>
+            <div class="usage-card">
+                <div class="usage-cmd">/fp-plan</div>
+                <div class="usage-desc">Plan a new project from first principles. Key decisions ordered by irreversibility, with options and trade-offs.</div>
+            </div>
+            <div class="usage-card">
+                <div class="usage-cmd">/fp-code src/auth/</div>
+                <div class="usage-desc">Review code for structural and logical issues &mdash; not style nits. Findings with file:line references traced to principles.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="separator">
+
+<!-- Principles -->
+<section class="section">
+    <div class="container">
+        <h2 class="section-title">15 Principles</h2>
+        <p class="section-subtitle">Not a checklist. A reference. The skill draws from these selectively based on what the analysis reveals.</p>
+
+        <div class="tier-label">Foundational &mdash; Always Relevant</div>
+        <div class="principle-grid">
+            <div class="principle-card">
+                <h4>Separation of Concerns</h4>
+                <p>"If requirement X changes, how many places break?"</p>
+            </div>
+            <div class="principle-card">
+                <h4>Information Hiding</h4>
+                <p>"Can I change internals without breaking consumers?"</p>
+            </div>
+            <div class="principle-card">
+                <h4>Coupling &amp; Cohesion</h4>
+                <p>"Do things that change together live together?"</p>
+            </div>
+            <div class="principle-card">
+                <h4>Simplicity</h4>
+                <p>"What happens if I delete this?"</p>
+            </div>
+            <div class="principle-card">
+                <h4>Single Source of Truth</h4>
+                <p>"If this fact changes, how many places need updating?"</p>
+            </div>
+        </div>
+
+        <div class="tier-label">Structural &mdash; Architecture &amp; Design</div>
+        <div class="principle-grid">
+            <div class="principle-card">
+                <h4>Least Knowledge</h4>
+                <p>"Does this component know things it doesn't need?"</p>
+            </div>
+            <div class="principle-card">
+                <h4>Reversibility</h4>
+                <p>"What's the cost of changing this decision in 6 months?"</p>
+            </div>
+            <div class="principle-card">
+                <h4>Dependency Direction</h4>
+                <p>"Does business logic depend on infrastructure?"</p>
+            </div>
+            <div class="principle-card">
+                <h4>Fail-Fast</h4>
+                <p>"If this input is invalid, when does the system find out?"</p>
+            </div>
+            <div class="principle-card">
+                <h4>Composition over Inheritance</h4>
+                <p>"Am I inheriting behavior I don't need?"</p>
+            </div>
+        </div>
+
+        <div class="tier-label">Operational &mdash; Scale &amp; Production</div>
+        <div class="principle-grid">
+            <div class="principle-card">
+                <h4>Observability</h4>
+                <p>"If this breaks at 3am, can on-call understand it?"</p>
+            </div>
+            <div class="principle-card">
+                <h4>Idempotency</h4>
+                <p>"What happens if this runs twice?"</p>
+            </div>
+            <div class="principle-card">
+                <h4>Graceful Degradation</h4>
+                <p>"If dependency X dies, does everything stop?"</p>
+            </div>
+            <div class="principle-card">
+                <h4>Backpressure</h4>
+                <p>"What happens when load exceeds capacity?"</p>
+            </div>
+            <div class="principle-card">
+                <h4>Least Astonishment</h4>
+                <p>"Would a new team member be surprised by this?"</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="separator">
+
+<!-- Philosophy -->
+<section class="section">
+    <div class="container">
+        <h2 class="section-title">Philosophy</h2>
+        <div class="why-grid">
+            <div class="why-card">
+                <h3>Reasoning > Checklists</h3>
+                <p>A checklist catches known patterns. First-principles reasoning catches novel problems &mdash; the ones nobody thought to check for.</p>
+            </div>
+            <div class="why-card">
+                <h3>Assumptions Are Risk</h3>
+                <p>The most dangerous technical decisions are the ones nobody realized they were making. Surface them before they surface themselves.</p>
+            </div>
+            <div class="why-card">
+                <h3>Assessment, Not Judgment</h3>
+                <p>The goal is clarity about trade-offs, not a score. "Microservices" isn't wrong. "Microservices because microservices" is.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="separator">
+
+<!-- Agents -->
+<section class="section">
+    <div class="container">
+        <h2 class="section-title">Works With Your Agent</h2>
+        <div class="why-grid">
+            <div class="why-card">
+                <h3>Full Skill Experience</h3>
+                <p>Claude Code, Codex CLI, and OpenCode get the complete five-phase framework with shared principle catalog and output templates.</p>
+            </div>
+            <div class="why-card">
+                <h3>Project Rules</h3>
+                <p>Cursor and Windsurf get the methodology as project or global rules. Same reasoning framework, adapted to the agent's model.</p>
+            </div>
+            <div class="why-card">
+                <h3>One Installer</h3>
+                <p>The install script auto-detects every agent on your machine and sets up the right files in the right places. One command, done.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <p>
+            Works with Claude Code, Codex CLI, OpenCode, Cursor &amp; Windsurf &middot;
+            <a href="https://github.com/v1r3n/first-principles-skills">GitHub</a> &middot;
+            MIT License
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>
